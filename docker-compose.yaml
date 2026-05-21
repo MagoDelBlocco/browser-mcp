@@ -1,6 +1,11 @@
 services:
   browser:
-    build: .
+    build:
+      context: .
+      args:
+        - HF_TOKEN
+        - EMBEDDING_MODEL
+        - RERANKING_MODEL
     container_name: mcp-browser
     extra_hosts:
       - "host.docker.internal:host-gateway"

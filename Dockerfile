@@ -2,6 +2,8 @@
 FROM python:3.11-slim AS builder
 
 ARG HF_TOKEN
+ARG EMBEDDING_MODEL=google/embeddinggemma-300m
+ARG RERANKING_MODEL=cross-encoder/ettin-reranker-400m-v1
 ENV HF_TOKEN=${HF_TOKEN}
 
 WORKDIR /app
@@ -24,14 +26,16 @@ RUN pip install --no-cache-dir --user \
     sentence-transformers
 
 # Pre-download models to avoid runtime cold start
-RUN python -c "from sentence_transformers import SentenceTransformer; model = SentenceTransformer(\"google/embeddinggemma-300m\", device=\"cpu\")"
-RUN python -c "from sentence_transformers import CrossEncoder; model = CrossEncoder(\"cross-encoder/ettin-reranker-400m-v1\", device=\"cpu\")"
+RUN python -c "from sentence_transformers import SentenceTransformer; model = SentenceTransformer(\"${EMBEDDING_MODEL}\", device=\"cpu\")"
+RUN python -c "from sentence_transformers import CrossEncoder; model = CrossEncoder(\"${RERANKING_MODEL}\", device=\"cpu\")"
 
 
 # Stage 2: Runtime stage
 FROM python:3.11-slim
 
 ARG HF_TOKEN
+ARG EMBEDDING_MODEL=google/embeddinggemma-300m
+ARG RERANKING_MODEL=cross-encoder/ettin-reranker-400m-v1
 ENV HF_TOKEN=${HF_TOKEN}
 
 WORKDIR /app

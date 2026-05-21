@@ -340,7 +340,7 @@ async def deep_fetch(
 
     async def fetch_one(client: httpx.AsyncClient, url: str, idx: int):
         async with sem:
-            payload = {"url": url, "formats": ["markdown"]}
+            payload = {"url": url, "formats": ["markdown"], "onlyMainContent": True}
             try:
                 r = await client.post(
                     f"{FIRECRAWL_BASE}/v1/scrape",
@@ -395,7 +395,7 @@ async def deep_fetch(
     for res in successful:
         content = res["content"]
         if len(content) < THRESHOLD:
-            all_chunks.append({"url": res["url"], "chunk_id": 0, "text": content, "score": 1.0})
+            all_chunks.append({"url": res["url"], "chunk_id": 0, "text": content, "embed_score": 1.0})
         else:
             chunks = markdown_section_split(content, CHUNK_SIZE, OVERLAP)
             merged_chunks = merge_small_chunks(chunks, min_length=200)
