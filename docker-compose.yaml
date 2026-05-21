@@ -1,0 +1,17 @@
+services:
+  browser:
+    build: .
+    container_name: mcp-browser
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+    ports:
+      - "13010:8000"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
