@@ -1,0 +1,17 @@
+# Minimal project definition so `uv lock` can produce a reproducible uv.lock.
+# The runtime entrypoint is server.py; this is not a publishable package.
+[project]
+name = "mcp-browser"
+version = "1.0.0"
+description = "MCP web-search server: DuckDuckGo for discovery, Crawl4AI for retrieval, BM25 relevance ranking."
+requires-python = ">=3.11"
+dependencies = [
+    # Pinned: an unpinned rebuild silently picks up a new crawl4ai/fastmcp major
+    # and breaks the image with no code change.
+    "fastmcp==3.4.5",
+    "ddgs==9.14.4",
+    "crawl4ai[pdf]==0.9.2",
+]
+
+[tool.uv]
+# The build stage in the Dockerfile installs from uv.lock for reproducibility.

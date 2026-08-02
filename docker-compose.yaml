@@ -2,21 +2,27 @@ services:
   browser:
     build:
       context: .
-      args:
-        - HF_TOKEN
-        - EMBEDDING_MODEL
-        - RERANKING_MODEL
     container_name: mcp-browser
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file: .env
     ports:
-      - "13010:8000"
+      # Loopback-only. This server fetches arbitrary URLs on request, so exposing it
+      # on all interfaces hands that capability to anyone who can reach the port.
+      # To share it deliberately, set AUTH_TOKEN in .env and widen this to "13010:8000".
+      - "127.0.0.1:13010:8000"
     restart: unless-stopped
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: ["0"]
-              capabilities: [gpu]
+    # Chromium spawns many short-lived children; PID 1 must reap them
+    init: true
+    # Chromium crashes on the default 64MB /dev/shm
+    shm_size: "1gb"
+    # Chromium is happy to consume every byte available. Note that Crawl4AI's
+    # MemoryAdaptiveDispatcher reads host RAM, not this limit — see README.
+    mem_limit: "2g"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import socket; socket.create_connection(('127.0.0.1', 8000), timeout=3).close()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
